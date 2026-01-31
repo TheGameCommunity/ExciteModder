@@ -19,6 +19,7 @@ build/classes
 build/libs
 build/resources/
 build/tmp
+build/reports
 
 #JVM
 hs_err_pid*.log
