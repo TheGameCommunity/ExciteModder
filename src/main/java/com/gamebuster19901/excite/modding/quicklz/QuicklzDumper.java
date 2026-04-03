@@ -5,9 +5,9 @@ import java.io.IOError;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.TimeUnit;
 
-import com.gamebuster19901.excite.modding.FileUtils;
+import com.gamebuster19901.excite.modding.quicklz.QuickLZ.ExitCode;
+import com.gamebuster19901.excite.modding.util.FileUtils;
 
 public class QuicklzDumper {
 	
@@ -28,12 +28,17 @@ public class QuicklzDumper {
 		try {
 			Files.write(input, _raw_data, StandardOpenOption.CREATE);
 			Process process = QuickLZ.decompress(input, output);
-			process.waitFor(5000, TimeUnit.SECONDS);
+			int exitCode = process.waitFor();
+			if(exitCode != ExitCode.SUCCESS.ordinal()) {
+				throw new DecodingException(exitCode);
+			}
 			return Files.readAllBytes(output);
 		}
 		catch(IOException | InterruptedException e) {
-			throw new IOError(e);
+			IOError err = new IOError(e);
+			err.printStackTrace();
+			throw err;
 		}
 	}
-
+	
 }

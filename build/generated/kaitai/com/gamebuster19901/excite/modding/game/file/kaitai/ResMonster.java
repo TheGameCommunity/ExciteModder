@@ -155,7 +155,7 @@ public class ResMonster extends KaitaiStruct {
             _read();
         }
         private void _read() {
-            if (_root().header().compressed() == 128) {
+            if ( ((_root().header().compressed() == 128) || (_root().header().compressed() == 1152)) ) {
                 this.compressedData = new QuicklzRcmp(this._io);
             }
             if (_root().header().compressed() == 0) {

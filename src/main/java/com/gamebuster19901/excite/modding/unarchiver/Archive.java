@@ -18,7 +18,7 @@ public class Archive {
 	private final Path archiveFile;
 	private final ResMonster archive;
 	private final Toc toc;
-	private byte[] bytes;
+	private final byte[] bytes;
 	private final LinkedHashMap<String, ArchivedFile> files = new LinkedHashMap<>();
 	
 	public Archive(Path archivePath, Path tocPath) throws IOException {
@@ -29,6 +29,18 @@ public class Archive {
 		this.archiveFile = archivePath;
 		this.archive = ResMonster.fromFile(archivePath.toAbsolutePath().toString());
 		this.toc = toc;
+		if(isCompressed()) {
+			bytes = archive.data().compressedData().bytes();
+		}
+		else {
+			bytes = archive.data().uncompressedData();
+		}
+		if(bytes == null) {
+			throw new AssertionError();
+		}
+		if(bytes.length == 0) {
+			throw new AssertionError();
+		}
 		for(TocMonster.Details fileDetails : getFileDetails()) {
 			try {
 				files.put(fileDetails.name(), new ArchivedFile(fileDetails, this));
@@ -37,6 +49,7 @@ public class Archive {
 				//swallo
 			}
 		}
+
 	}
 	
 	public Toc getToc() {
@@ -80,7 +93,7 @@ public class Archive {
 	}
 	
 	public boolean isCompressed() {
-		if (archive.header().compressed() == 128) {
+		if (((archive.header().compressed() >>> 7) & 1) != 0) {
 			return true;
 		}
 		else if (archive.header().compressed() == 0) {
@@ -92,14 +105,6 @@ public class Archive {
 	}
 	
 	public byte[] getBytes() {
-		if(bytes == null) {
-			if(isCompressed()) {
-				bytes = archive.data().compressedData().bytes();
-			}
-			else {
-				bytes = archive.data().uncompressedData();
-			}
-		}
 		return Arrays.copyOf(bytes, bytes.length);
 	}
 	

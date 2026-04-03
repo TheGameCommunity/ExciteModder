@@ -59,7 +59,7 @@ types:
     seq:
       - id: compressed_data
         type: quicklz_rcmp
-        if: _root.header.compressed == 128
+        if: _root.header.compressed == 128 or _root.header.compressed == 1152
       - id: uncompressed_data
         size-eos: true
         if: _root.header.compressed == 0

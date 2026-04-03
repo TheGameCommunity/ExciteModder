@@ -12,28 +12,21 @@ public class ArchivedFile {
 
 	private final TocMonster.Details fileDetails;
 	private final Archive archive;
-	private final byte[] bytes;
 	
 	public ArchivedFile(TocMonster.Details fileDetails, Archive archive) {
 		try {
 			this.fileDetails = fileDetails;
 			this.archive = archive;
+			System.out.println("Archive size: " + archive.getUncompressedSize());
 			System.out.println("File offset: " + fileDetails.fileOffset());
 			System.out.println("File size: " + fileDetails.fileSize());
 			System.out.println("File end: " + ((int)fileDetails.fileOffset() + (int)fileDetails.fileSize()));
-			System.out.println("Thread: " + Thread.currentThread().getName());
-			System.out.println(archive.getBytes().length);
-			this.bytes = Arrays.copyOfRange(archive.getBytes(), (int)fileDetails.fileOffset(), (int)(fileDetails.fileOffset() + (int)fileDetails.fileSize()));
+			byte[] bytes = archive.getBytes();
+			System.out.println("Array size: " + bytes.length);
 		}
 		catch(Throwable t) {
-			System.err.println("Could not extract resource " + getName() + " from " + archive.getArchiveFile().getFileName());
-		    java.util.Collection<java.lang.StackTraceElement[]> a1 = java.lang.Thread.getAllStackTraces().values();
-		    for (java.lang.StackTraceElement[] a2 : a1){
-		        System.out.println("========== ");
-		        for (java.lang.StackTraceElement a3 : a2){
-		            System.out.println(a3.toString());
-		        }
-		    }
+			System.err.println("Bad resource reference: " + getName() + " from " + archive.getArchiveFile().getFileName());
+			t.printStackTrace();
 			throw t;
 		}
 	}
@@ -42,8 +35,13 @@ public class ArchivedFile {
 		return fileDetails.name();
 	}
 	
-	public byte[] getBytes() {
-		return bytes;
+	public byte[] getBytes() throws IOException {
+		try {
+			return Arrays.copyOfRange(archive.getBytes(), (int)fileDetails.fileOffset(), (int)(fileDetails.fileOffset() + (int)fileDetails.fileSize()));
+		}
+		catch(Throwable t) {
+			throw new IOException(t);
+		}
 	}
 	
 	public void writeTo(Path directory) throws IOException {

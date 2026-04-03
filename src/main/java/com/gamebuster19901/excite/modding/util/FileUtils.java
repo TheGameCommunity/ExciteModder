@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.modding;
+package com.gamebuster19901.excite.modding.util;
 
 import java.io.File;
 import java.io.IOError;
@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.LinkedHashSet;
 
 public class FileUtils {
 
@@ -65,7 +66,9 @@ public class FileUtils {
 	}
 	
 	public static Path createTempFile() throws IOException {
-		return Files.createTempFile(TEMP, null, null);
+		Path f = Files.createTempFile(TEMP, null, null);
+		System.out.println("Created temporary file " + f);
+		return f;
 	}
 	
 	public static Path createTempFile(String name) throws IOException {
@@ -116,6 +119,50 @@ public class FileUtils {
 		} else {
 			System.out.println("The specified path does not exist: " + path);
 		}
+	}
+	
+	public static LinkedHashSet<Path> getFilesRecursively(Path path) throws IOException {
+		LinkedHashSet<Path> paths = new LinkedHashSet<>();
+		if (Files.exists(path)) {
+			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					paths.add(file);
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					if (Files.isSymbolicLink(dir)) {
+						//skip symbolic links
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} else {
+			System.out.println("The specified path does not exist: " + path);
+		}
+		return paths;
+	}
+	
+	public static String getFileName(Path f) {
+		 String fileName = f.getFileName().toString();
+		 int i = fileName.lastIndexOf('.');
+		 return (i == -1) ? fileName : fileName.substring(0, i);
+	}
+	
+	public static String getExtension(String fileName) {
+		int i = fileName.lastIndexOf('.');
+		return i == -1 ? "" : fileName.substring(i + 1);		
+	}
+
+	public static boolean isDirectory(Path dir) {
+		return Files.isDirectory(dir) && !Files.isSymbolicLink(dir);
+	}
+	
+	public static boolean isDirectory(File dir) {
+		return isDirectory(dir.getAbsoluteFile().toPath());
 	}
 	
 }

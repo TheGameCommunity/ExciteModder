@@ -9,7 +9,11 @@ public class QuickLZ {
 
 	static {
 		if(!ForeignDependencies.EQUICKLZ.isAvailable()) {
-			ForeignDependencies.downloadAndCompileAllDeps();
+			try {
+				ForeignDependencies.downloadAndCompileAllDeps();
+			} catch (LinkageError e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 	
@@ -17,6 +21,26 @@ public class QuickLZ {
 		help,
 		compress,
 		decompress
+	}
+	
+	public static enum ExitCode {
+		SUCCESS,
+		HELP_SUCCESS,
+		UNKNOWN_MODE,
+		MISSING_MODE_ARG,
+		MISSING_SOURCE_ARG,
+		MISSING_DEST_ARG,
+		TOO_MANY_ARGS,
+		SOURCE_ERR,
+		DEST_ERR,
+		UNKNOWN;
+		
+		public static ExitCode get(int i) {
+			if(i < values().length && i >= 0) {
+				return values()[i];
+			}
+			return UNKNOWN;
+		}
 	}
 	
 	private static final QuickLZImpl impl = QuickLZImpl.get();
