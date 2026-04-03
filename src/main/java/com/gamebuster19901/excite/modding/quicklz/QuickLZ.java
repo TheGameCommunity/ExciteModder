@@ -11,7 +11,7 @@ public class QuickLZ {
 		if(!ForeignDependencies.EQUICKLZ.isAvailable()) {
 			try {
 				ForeignDependencies.downloadAndCompileAllDeps();
-			} catch (IOException | InterruptedException | LinkageError e) {
+			} catch (LinkageError e) {
 				throw new RuntimeException(e);
 			}
 		}
